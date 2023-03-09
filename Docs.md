@@ -1,0 +1,12 @@
+>> Note: These Scripts Run on Ubuntu 20.04 recommended
+- Make  sure to copy keys in webserver for using those keys to distribute the content securely
+- sshd for creating user without user with username and password so you can login using same credentials
+- Please Make Sure that `vm3.sh` have username and ca_server_ip_address `scp <username>@<ca_server_ip_address>:~/etc/ssl/certs/ca.crt /etc/ssl/certs/ca.crt`
+- Use telnet to debug ports for connection
+- Check Network Types For debugging Network Connection
+- You can able to allow ports using `ufw allow port_number host_address`
+- You can secure copy from source to destination server and vice versa using `scp` command 
+- scp works on port `22`
+- Permission Eror Solve with "`chmod` and chown `commands`"
+- Example to run script `sh vm3.sh`
+- vm1 is just client for testing vm2 and vm3-webserver
