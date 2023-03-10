@@ -80,19 +80,30 @@ sudo sed -i 's/^nameserver.*$/nameserver <IP address of CS>/' /etc/resolv.conf
 #!/bin/bash
 
 # Install DNSSEC packages
-sudo apt-get install bind9 dnssec-tools -y
+sudo apt-get update
+sudo apt-get install bind9 bind9utils bind9-doc
+cat >>/etc/bind/named.conf.local<<EOF
+zone "mywebserver.com" {
+    type master;
+    file "/etc/bind/db.mywebserver.com";
+};
+EOF
+cat >>/etc/bind/db.mywebserver.com<<EOF
+$TTL 86400
+@   IN  SOA ns1.mywebserver.com. admin.mywebserver.com. (
+    2022031001  ; serial number
+    3600        ; refresh
+    1800        ; retry
+    604800      ; expire
+    86400       ; minimum TTL
+)
 
-# Generate a new DNSSEC key pair for the WS domain
-cd /etc/bind
-dnssec-keygen -a NSEC3RSASHA1 -b 2048 -n ZONE mywebserver.com
-
-# Create a signed zone file for the WS domain
-dnssec-signzone -A -3 $(head -c 1000 /dev/random | sha1sum | cut -b 1-16) -N INCREMENT -o mywebserver.com -t mywebserver.com.zone mywebserver.com.mywebserver.com.key
-
-# Configure BIND to serve the signed zone file
-sudo sed -i 's/^zone.*$/zone "mywebserver.com" { type master; file "\/etc\/bind\/mywebserver.com.zone.signed"; };/' /etc/bind/named.conf.local
-
-# Restart BIND to apply the changes
+@   IN  NS  ns1.mywebserver.com.
+@   IN  A   192.168.1.1
+ns1 IN  A   192.168.1.1 #Note replace your webservver public ip here
+EOF
+sudo named-checkconf
+sudo named-checkzone mywebserver.com /etc/bind/db.mywebserver.com
 sudo systemctl restart bind9
 
 ```
